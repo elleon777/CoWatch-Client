@@ -18,7 +18,9 @@ import {
 import { TbLink } from 'react-icons/tb';
 import { IoMdSync, IoMdArrowForward } from 'react-icons/io';
 
-let socket = io('http://localhost:9999/', { transports: ['websocket'] });
+const linkSocket = process.env.REACT_APP_API_URL || 'http://localhost:9999/';
+
+let socket = io(linkSocket, { transports: ['websocket'] });
 
 function App() {
   //https://m.vk.com/video-463673_456239380'
