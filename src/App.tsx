@@ -84,7 +84,7 @@ function App() {
     socket.emit('sendTime', vidRef.current.currentTime);
   }
   function serverSyncPlay(): void {
-    serverSync();
+    // serverSync();
     socket.emit('playVideo');
   }
   function serverSyncPause(): void {
