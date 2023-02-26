@@ -45,7 +45,6 @@ function App() {
     }
     axios.get(parseUrl).then((html) => {
       const $ = cheerio.load(html.data);
-      console.log($);
     });
   }
   React.useEffect(() => {
@@ -78,8 +77,8 @@ function App() {
       return;
     }
     vidRef.current.currentTime = currentTime;
-    vidRef.current.volume = 0.2;
-    vidRef.current.play();
+    vidRef.current.volume = 0.1;
+    // vidRef.current.play();
   }
   function serverSync(): void {
     socket.emit('sendTime', vidRef.current.currentTime);
@@ -91,13 +90,17 @@ function App() {
   function serverSyncPause(): void {
     socket.emit('pauseVideo');
   }
-  const [request, setRequest] = React.useState('');
-  const [srcVideo, setSrcVideo] = React.useState(
+  const [request, setRequest] = React.useState<string>('');
+  const [srcVideo, setSrcVideo] = React.useState<string>(
     'https:/vkvd189.mycdn.me/?srcIp=83.149.45.231&pr=40&expires=1677542160140&srcAg=CHROME&fromCache=1&ms=185.226.53.189&type=3&sig=4YcFp9690us&ct=0&urls=45.136.22.175&clientType=14&appId=512000384397&zs=48&id=796381481708',
   );
-  // нужно синхронизировать реквест на все сокеты
+
   function requestVideo(src: string): void {
     socket.emit('requestVideo', src);
+  }
+
+  function log() {
+    console.log("log")
   }
 
   return (
@@ -134,7 +137,6 @@ function App() {
             onPlay={serverSyncPlay}
             onPause={serverSyncPause}
             width="100%"
-            // height="500"
             preload="auto"
             controls
             playsInline
