@@ -49,7 +49,7 @@ function App() {
   }
   React.useEffect(() => {
     socket.on('connect', function () {
-      alert('Подключение успешно');
+      console.log('Подключение успешно', socket.id);
     });
     socket.on('sync', (currentTime) => {
       syncTime(currentTime);
@@ -84,7 +84,6 @@ function App() {
     socket.emit('sendTime', vidRef.current.currentTime);
   }
   function serverSyncPlay(): void {
-    // serverSync();
     socket.emit('playVideo');
   }
   function serverSyncPause(): void {
