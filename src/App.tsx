@@ -17,16 +17,20 @@ import {
 } from '@chakra-ui/react';
 import { TbLink } from 'react-icons/tb';
 import { IoMdSync, IoMdArrowForward } from 'react-icons/io';
+import VideoJS from './components/VideoJs';
+import videojs from 'video.js';
 
 const linkSocket = process.env.REACT_APP_API_URL || 'http://localhost:9999/';
 
 let socket = io(linkSocket, { transports: ['websocket'] });
 
-function App() {
-  //https://m.vk.com/video-463673_456239380'
-  const inputUrl =
-    'https://vk.com/video/playlist/-463673_53376946?section=playlist_53376946&z=video-463673_456239380%2Fclub463673%2Fpl_-463673_53376946';
+// TODO 
+// синхронизировать буферизацию видео
+// err : didn't interact with the document first
+// сделать иконки тех кто присоединился с временем видел, 
+// а если буферизация не закончилась блочить видео и показывать лоадер на аве
 
+function App() {
   function parseUrlVideo(url: string): string | undefined {
     const regex = /video-[0-9]{6}_[0-9]{9}/gm;
     const idVkVideo = url.match(regex);
@@ -55,33 +59,66 @@ function App() {
       syncTime(currentTime);
     });
     socket.on('syncPlay', () => {
-      console.log('play');
-      vidRef.current.play();
+      playerRef.current.play();
     });
     socket.on('syncPause', () => {
-      console.log('pause');
-      vidRef.current.pause();
+      playerRef.current.pause();
     });
     socket.on('syncRequestVideo', (src) => {
       setSrcVideo(src);
     });
     return () => {
       socket.removeAllListeners();
+      socket.disconnect();
     };
   }, []);
+  const [request, setRequest] = React.useState<string>('');
+  const [srcVideo, setSrcVideo] = React.useState<string>(
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  );
+  const playerRef = React.useRef<any>(null);
 
-  const vidRef = React.useRef<any>(null);
+  const videoJsOptions = {
+    autoplay: false,
+    controls: true,
+    responsive: true,
+    fluid: true,
+    sources: [
+      {
+        src: srcVideo,
+        type: 'video/mp4',
+      },
+    ],
+  };
+
+  const handlePlayerReady = (player: any) => {
+    playerRef.current = player;
+    const progressControl = player.controlBar.progressControl;
+    progressControl.on('mouseup', () => {
+      serverSync();
+    });
+
+    player.on('play', () => {
+      // videojs.log('player play');
+      serverSyncPlay();
+    });
+
+    player.on('pause', () => {
+      // videojs.log('player pause');
+      serverSyncPause();
+    });
+  };
 
   function syncTime(currentTime: number): void {
-    if (!vidRef) {
+    if (!playerRef) {
       return;
     }
-    vidRef.current.currentTime = currentTime;
-    vidRef.current.volume = 0.1;
-    // vidRef.current.play();
+    playerRef.current.currentTime(currentTime);
+    playerRef.current.volume = 0.1;
+    // playerRef.current.play();
   }
   function serverSync(): void {
-    socket.emit('sendTime', vidRef.current.currentTime);
+    socket.emit('sendTime', playerRef.current.currentTime());
   }
   function serverSyncPlay(): void {
     socket.emit('playVideo');
@@ -89,18 +126,18 @@ function App() {
   function serverSyncPause(): void {
     socket.emit('pauseVideo');
   }
-  const [request, setRequest] = React.useState<string>('');
-  const [srcVideo, setSrcVideo] = React.useState<string>(
-    'https:/vkvd189.mycdn.me/?srcIp=83.149.45.231&pr=40&expires=1677542160140&srcAg=CHROME&fromCache=1&ms=185.226.53.189&type=3&sig=4YcFp9690us&ct=0&urls=45.136.22.175&clientType=14&appId=512000384397&zs=48&id=796381481708',
-  );
 
   function requestVideo(src: string): void {
     socket.emit('requestVideo', src);
   }
 
   function log() {
-    console.log("log")
+    console.log('log');
   }
+
+  React.useEffect(() => {
+    // const progressBar = new PlayProgressBar(playerRef.current);
+  }, []);
 
   return (
     <div className="App">
@@ -131,20 +168,21 @@ function App() {
               </Button>
             </ButtonGroup>
           </Flex>
-          <video
-            ref={vidRef}
+          {/* <video
+            ref={playerRef}
             onPlay={serverSyncPlay}
             onPause={serverSyncPause}
             width="100%"
             preload="auto"
             controls
             playsInline
-            src={srcVideo}></video>
+            src={srcVideo}></video> */}
+          <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
         </Box>
       </Container>
 
-      {/* <button onClick={serverSyncPlay}>Play</button>
-      <button onClick={serverSyncPause}>Pause</button> */}
+      <button onClick={serverSyncPlay}>Play</button>
+      <button onClick={serverSyncPause}>Pause</button>
     </div>
   );
 }
