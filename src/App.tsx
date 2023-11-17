@@ -3,8 +3,11 @@ import React from 'react';
 import { io } from 'socket.io-client';
 import VideoJS from './components/VideoJS';
 import Header from 'components/layout/Header/Header';
-import { ServerSyncController } from 'services';
 import videojs from 'video.js';
+import { Login } from 'views/Login';
+import { getUsers } from 'store/users/users.action';
+import { useDispatch } from 'react-redux';
+import { useAppDispatch } from 'utils/hooks/store';
 // import { Header } from 'components/layout';
 
 const linkSocket = 'http://localhost:9999/';
@@ -96,10 +99,15 @@ function App() {
   function requestVideo(src: string): void {
     socket.emit('requestVideo', src);
   }
+  const dispatch = useAppDispatch();
+  React.useEffect(() => {
+    dispatch(getUsers());
+  }, [dispatch]);
 
   return (
     <div className="App">
       {/* <Header ServerSync={ServerSync} player={playerRef.current} /> */}
+      <Login />
       <Container maxWidth="xl">
         <Grid container>
           <Grid item lg={8} xs={12}>

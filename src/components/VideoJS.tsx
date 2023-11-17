@@ -22,8 +22,8 @@ interface VideoPlayerProps {
 export const VideoJS: FC<VideoPlayerProps> = (props) => {
   const videoRef = React.useRef<HTMLDivElement | null>(null);
   const playerRef = React.useRef<Player | null>(null);
+  
   const { options, onReady } = props;
-
   React.useEffect(() => {
     if (!playerRef.current && videoRef.current) {
       const videoElement = document.createElement('video-js');
@@ -35,11 +35,14 @@ export const VideoJS: FC<VideoPlayerProps> = (props) => {
         videojs.log('player is ready');
         onReady && onReady(player);
       }));
+    } else {
+      const player = playerRef.current;
 
-      // You could update an existing player in the `else` block here
-      // on prop change, for example:
+      player?.autoplay(options?.autoplay);
+      player?.src(options?.sources);
     }
-  }, [options, videoRef, onReady]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options, videoRef]);
 
   React.useEffect(() => {
     const player = playerRef.current;
