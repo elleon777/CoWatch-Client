@@ -6,6 +6,7 @@ export default class SocketClient {
 
   connect() {
     this.socket = io(WEB_SOCKET_HOST, { transports: ['websocket'] });
+    console.log("socket connected class")
   }
 
   disconnect() {

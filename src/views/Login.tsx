@@ -17,19 +17,19 @@ export const Login: React.FC = () => {
       [name]: value,
     });
   };
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    console.log('sumbit');
-    event.preventDefault();
+  // const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    // console.log('sumbit');
+    // event.preventDefault();
 
-    dispatch(login(user));
-  };
+    // dispatch(login(user));
+  // };
   const handleClick = () => {
-    console.log('sumbit');
     dispatch(login(user));
+    localStorage.setItem('user', JSON.stringify(user));
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form>
       <TextField
         name="username"
         value={user.username}

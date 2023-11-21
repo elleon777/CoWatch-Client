@@ -1,3 +1,5 @@
+import { Status } from "utils/enums/status";
+
 export interface User {
   username: string,
   online?: boolean
@@ -5,8 +7,5 @@ export interface User {
 
 export interface UsersState {
   users: User[];
-  loading: boolean;
-  error: string | null;
-  // onlineUsersByUsername: string[];
-  // typingUsers: string[];
+  status: Status;
 }
