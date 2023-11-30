@@ -1,6 +1,5 @@
 import { User, UsersState } from 'utils/@types/users';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { fetchUsers } from './users.action';
 import { Status } from 'utils/enums/status';
 
 const initialState: UsersState = {
@@ -18,22 +17,21 @@ const usersSlice = createSlice({
     addUser: (state, { payload }: PayloadAction<User>) => {
       state.users = [...state.users, payload];
     },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(fetchUsers.pending, (state) => {
-      state.status = Status.LOADING;
-      state.users = [];
-    });
-    builder.addCase(fetchUsers.fulfilled, (state, { payload }) => {
-      state.status = Status.SUCCESS;
+    setUsers: (state, { payload }: PayloadAction<User[]>) => {
       state.users = payload;
-    });
-    builder.addCase(fetchUsers.rejected, (state) => {
-      state.status = Status.ERROR;
-      state.users = [];
-    });
+    },
+    setOnlineUser: (state, { payload }: PayloadAction<User>) => {
+        const newList: User[] = state.users.map((user: User) => {
+          if (user.username === payload.username) {
+            return { ...user, online: true };
+          }
+          return user;
+        });
+
+      state.users = newList;
+    },
   },
 });
 
-export const { removeUser, addUser } = usersSlice.actions;
+export const { removeUser, addUser, setUsers, setOnlineUser } = usersSlice.actions;
 export default usersSlice.reducer;

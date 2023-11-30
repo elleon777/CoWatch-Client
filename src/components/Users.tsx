@@ -1,22 +1,33 @@
-import React from 'react';
-
-import { useAppDispatch, useAppSelector } from 'utils/hooks/store';
+import { Typography } from '@mui/material';
+import { useGetUsersQuery } from 'api/usersApi';
 import { RootState } from 'utils/@types/store';
-import { fetchUsers } from 'store/users/users.action';
+import { useAppSelector } from 'utils/hooks/store';
 
 export const Users = () => {
-  const dispatch = useAppDispatch();
-  
-  React.useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
+  const { data, isLoading, isError } = useGetUsersQuery();
 
-  const usersArr = useAppSelector((state: RootState) => state.usersState);
+  const { users } = useAppSelector((state: RootState) => state.usersState);
+  const { currentUser } = useAppSelector((state: RootState) => state.authState);
+
+  console.log(users, currentUser);
+  if (isLoading) {
+    return <h2>Загрузка...</h2>;
+  }
+
+  if (isError) {
+    return <h2>Ошибка</h2>;
+  }
+
   return (
-    <>
-      {usersArr.users.map((user, index) => (
-        <li key={index}>{user.username}</li>
-      ))}
-    </>
+    <ul>
+      {data &&
+        users.map((user, index) => (
+          <li key={index}>
+            <Typography variant="body1" fontSize={20}>
+              {user.username}
+            </Typography>
+          </li>
+        ))}
+    </ul>
   );
 };

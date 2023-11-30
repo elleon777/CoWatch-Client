@@ -4,8 +4,9 @@ import { PrivateRoute } from 'routes/PrivateRoute';
 import { PublicRoute } from 'routes/PublicRoute';
 import { login } from 'store/auth/auth.slice';
 import { useAppDispatch } from 'utils/hooks/store';
-import { Login } from 'views/Login';
+import { Login } from 'views/LoginPage';
 import { Room } from 'views/Room';
+import { Rooms } from 'views/Rooms';
 
 const App: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -20,10 +21,11 @@ const App: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<PublicRoute />}>
-        <Route path="/" element={<Login />} />
+        <Route index element={<Login />} />
       </Route>
-      <Route path="/room" element={<PrivateRoute />}>
-        <Route path="/room" element={<Room />} />
+      <Route path="/*" element={<PrivateRoute />}>
+        <Route path="rooms" element={<Rooms />} />
+        <Route path="room/:roomId" element={<Room />} />
       </Route>
     </Routes>
   );

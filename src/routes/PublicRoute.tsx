@@ -7,5 +7,5 @@ import { useAppSelector } from 'utils/hooks/store';
 
 export const PublicRoute: React.FC = () => {
   const { isAuth } = useAppSelector((state: RootState) => state.authState);
-  return !isAuth ? <Outlet /> : <Navigate to="/room" />;
+  return !isAuth ? <Outlet /> : <Navigate to="/rooms" />;
 };

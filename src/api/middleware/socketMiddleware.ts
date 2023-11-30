@@ -1,8 +1,6 @@
 import { Dispatch } from '@reduxjs/toolkit';
-import { addUser, removeUser } from 'store/users/users.slice';
-import { RootState } from 'utils/@types/store';
+import { setOnlineUser, setUsers } from 'store/users/users.slice';
 import { User } from 'utils/@types/users';
-import { useAppSelector } from 'utils/hooks/store';
 
 interface SocketMiddlewareParams {
   dispatch: Dispatch;
@@ -15,16 +13,18 @@ export default function socketMiddleware(socket: any) {
     switch (type) {
       case 'auth/login': {
         socket.connect();
-        socket.on('new user added', (user: User) => {
-          dispatch(addUser(user));
+        // socket.on('new user added', ({ users, newUser }: { users: User[]; newUser: User }) => {
+        //   dispatch(setUsers(users));
+        //   dispatch(setOnlineUser(newUser));
+        // });
+        socket.on('connect', () => {
+          console.log();
         });
         socket.emit('new login', payload);
         break;
       }
       case 'auth/logout': {
-        const { currentUser } = useAppSelector((state: RootState) => state.authState);
-        currentUser && dispatch(removeUser(currentUser));
-
+        socket.removeAllListeners();
         socket.disconnect();
         break;
       }

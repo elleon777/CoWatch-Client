@@ -1,8 +1,9 @@
 import { Status } from "utils/enums/status";
 
-export interface User {
-  username: string,
-  online?: boolean
+export type User = {
+  username: string;
+  online?: boolean;
+  currentTime: number | null;
 }
 
 export interface UsersState {

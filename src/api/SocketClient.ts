@@ -1,12 +1,11 @@
-import { Socket, io } from "socket.io-client";
-import { WEB_SOCKET_HOST } from "utils/config";
+import { Socket, io } from 'socket.io-client';
+import { WEB_SOCKET_HOST } from 'utils/config';
 
 export default class SocketClient {
   socket: Socket | null;
 
   connect() {
     this.socket = io(WEB_SOCKET_HOST, { transports: ['websocket'] });
-    console.log("socket connected class")
   }
 
   disconnect() {
@@ -15,14 +14,22 @@ export default class SocketClient {
       this.socket = null;
     }
   }
-
-  emit(eventName: string, data: any) {
+  removeAllListeners() {
     if (this.socket) {
-      this.socket.emit(eventName, data);
+      this.socket.removeAllListeners();
+    }
+  }
+  emit(eventName: string, data?: unknown) {
+    if (this.socket) {
+      if (data) {
+        this.socket.emit(eventName, data);
+      } else {
+        this.socket.emit(eventName);
+      }
     }
   }
 
-  on(eventName: string, func: () => void) {
+  on(eventName: string, func: (arg?: any) => void) {
     if (this.socket) {
       this.socket.on(eventName, func);
     }
