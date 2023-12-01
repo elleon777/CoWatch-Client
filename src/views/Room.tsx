@@ -12,6 +12,8 @@ export const Room: React.FC = () => {
   const { roomId } = useParams();
   React.useEffect(() => {
     //TODO loop bug is live
+    // Uncaught (in promise) DOMException: The fetching process for the media resource was aborted by the user agent at the user's request.
+    // сука ебучий промис уаааа
     // может быть паузить только по клику/пробелу?
     // связан скорее всего с буфуризацией или интернетом так как не удается определить паттерн бага
     // мб попробовать синхронищировать буферизацию, тип запретить воспроизведение пока
@@ -25,39 +27,39 @@ export const Room: React.FC = () => {
     socket.on('syncPause', () => {
       playerRef.current.pause();
     });
-    // socket.on('syncRequestVideo', (src) => {
-    //   setSrcVideo(src);
-    // });
+    socket.on('syncRequestVideo', (src) => {
+      // setSrcVideo(src);
+      playerRef.current.src({ type: 'video/mp4', src: src + '#t=1' });
+    });
     return () => {};
   }, []);
-  const playerRef = React.useRef<any>(null);
-  React.useEffect(() => {
-    if (playerRef.current) {
-      serverSync();
-    }
-  }, [playerRef.current]);
-
-  const [srcVideo, setSrcVideo] = React.useState<string>(
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  );
+  const [srcVideo, setSrcVideo] = React.useState<string>('');
+  // const [srcVideo, setSrcVideo] = React.useState<string>(
+  //   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  // );
+  // https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
   const dispatch = useAppDispatch();
+  const playerRef = React.useRef<any>(null);
 
   const videoJsOptions = {
     autoplay: false,
     controls: true,
     responsive: true,
     fluid: true,
-    sources: [
-      {
-        src: srcVideo,
-        type: 'video/mp4',
-      },
-    ],
+    preload: 'metadata',
+    // sources: [
+    //   {
+    //     src: srcVideo,
+    //     type: 'video/mp4',
+    //   },
+    // ],
   };
 
   const handlePlayerReady = (player: any) => {
     playerRef.current = player;
     const progressControl = player.controlBar.progressControl;
+
+    console.log('playerRef.current.src', playerRef.current.src);
     progressControl.on('mouseup', () => {
       serverSync();
     });
@@ -67,7 +69,6 @@ export const Room: React.FC = () => {
     player.on('pause', () => {
       serverSyncPause();
     });
-
     // player.on('timeupdate', () => {
     //   console.log(Math.ceil(playerRef.current.currentTime()))
     // });
@@ -96,21 +97,25 @@ export const Room: React.FC = () => {
   function serverSendTime(): void {
     socket.emit('sendTime');
   }
-  // function requestVideo(src: string): void {
-  //   socket.emit('requestVideo', src);
-  // }
+  function requestVideo(src: string): void {
+    const obj = {
+      src,
+      roomId,
+    };
+    socket.emit('requestVideo', obj);
+  }
 
   return (
     <Container maxWidth="xl" sx={{ pt: 5 }}>
       <Grid container spacing={2}>
         <Grid item lg={12} xs={12}>
-          <RequestVideo />
+          <RequestVideo requestVideo={requestVideo} />
         </Grid>
         <Grid item lg={8} xs={12}>
           <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
         </Grid>
         <Grid item lg={4} xs={12}>
-          {/* <button onClick={serverSync}>SYNC</button> */}
+          <button onClick={serverSync}>SYNC</button>
           <Users />
         </Grid>
       </Grid>
