@@ -2,7 +2,8 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { TextField, Button } from '@mui/material';
 import styles from './LoginForm.module.scss';
-import { login } from 'store/auth/auth.slice';
+import { User } from 'utils/@types/user';
+import { login } from 'store/user/user.slice';
 
 export interface FormFields {
   username: string;
@@ -20,7 +21,6 @@ export const LoginForm: React.FC = () => {
   };
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     dispatch(login(user));
     //   // localStorage.setItem('user', JSON.stringify(user));
   };

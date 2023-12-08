@@ -1,10 +1,6 @@
-import { PlayerState } from 'utils/@types/player';
-import { AuthState } from "./auth";
-import { UsersState } from "./users";
+import { UserState } from "./user";
 
 export interface RootState {
-  authState: AuthState;
-  usersState: UsersState;
-  playerState: PlayerState;
-  usersApi: any;
+  userState: UserState;
+  api: any;
 }

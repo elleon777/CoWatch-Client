@@ -2,15 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import SocketClient from '../api/SocketClient';
 import { rootReducer } from './rootReducer';
 import socketMiddleware from 'api/middleware/socketMiddleware';
-import { usersApi } from 'api/usersApi';
-import { roomsApi } from 'api/roomsApi';
+import { api } from 'api';
 
 export const socket = new SocketClient();
 
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (gDM) =>
-    gDM().concat(socketMiddleware(socket), usersApi.middleware, roomsApi.middleware),
+    gDM().concat(socketMiddleware(socket), api.middleware),
 });
 
 export type AppDispatch = typeof store.dispatch;

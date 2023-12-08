@@ -2,7 +2,7 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { PrivateRoute } from 'routes/PrivateRoute';
 import { PublicRoute } from 'routes/PublicRoute';
-import { login } from 'store/auth/auth.slice';
+import { login } from 'store/user/user.slice';
 import { useAppDispatch } from 'utils/hooks/store';
 import { Login } from 'views/LoginPage';
 import { Room } from 'views/Room';

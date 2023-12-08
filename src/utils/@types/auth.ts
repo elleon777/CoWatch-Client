@@ -1,6 +1,7 @@
-import { User } from './users';
+import { User } from './user';
 
 export interface AuthState {
-  currentUser: User | null;
+  // currentUser: User | null;
+  currentUser: string | null;
   isAuth: boolean;
 }

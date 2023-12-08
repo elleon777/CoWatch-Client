@@ -9,20 +9,15 @@ interface VideoPlayerProps {
 
 export const RequestVideo: React.FC<VideoPlayerProps> = ({ requestVideo }) => {
   const [request, setRequest] = React.useState<string>(
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    'https://anilib.me/anime/17984-chainsaw-man-anime/episode/106051?player=Animelib&team=32713',
   );
 
   const onChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRequest(event.target.value);
-    console.log(request)
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(request);
-    requestVideo(request);
-  };
-  const handleClick = () => {
     requestVideo(request);
   };
 
@@ -38,7 +33,7 @@ export const RequestVideo: React.FC<VideoPlayerProps> = ({ requestVideo }) => {
         variant="outlined"
         name="requestSrc"
       />
-      <IconButton className={styles.button} onClick={handleClick}>
+      <IconButton className={styles.button}>
         <SendIcon />
       </IconButton>
     </form>

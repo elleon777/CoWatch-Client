@@ -3,7 +3,6 @@ import { WEB_SOCKET_HOST } from 'utils/config';
 
 export default class SocketClient {
   socket: Socket | null;
-
   connect() {
     this.socket = io(WEB_SOCKET_HOST, { transports: ['websocket'] });
   }

@@ -1,27 +1,35 @@
 import { Typography } from '@mui/material';
-import { useGetUsersQuery } from 'api/usersApi';
-import { RootState } from 'utils/@types/store';
-import { useAppSelector } from 'utils/hooks/store';
+import { useLazyGetRoomUsersQuery } from 'api';
+import React from 'react';
+import { socket } from 'store';
 
-export const Users = () => {
-  const { data, isLoading, isError } = useGetUsersQuery();
+interface IUsersProps {
+  roomId: string | undefined;
+}
 
-  const { users } = useAppSelector((state: RootState) => state.usersState);
-  const { currentUser } = useAppSelector((state: RootState) => state.authState);
+export const Users: React.FC<IUsersProps> = ({ roomId }) => {
+  const [fetchTrigger, { data = [] }] = useLazyGetRoomUsersQuery();
+  React.useEffect(() => {
+    fetchTrigger(roomId);
+    socket.on('room:updateUsers', () => {
+      fetchTrigger(roomId);
+    });
+    return () => {
+      socket.removeAllListeners();
+    };
+  }, []);
+  // if (isLoading) {
+  //   return <h2>Загрузка...</h2>;
+  // }
 
-  console.log(users, currentUser);
-  if (isLoading) {
-    return <h2>Загрузка...</h2>;
-  }
-
-  if (isError) {
-    return <h2>Ошибка</h2>;
-  }
+  // if (isError) {
+  //   return <h2>Ошибка</h2>;
+  // }
 
   return (
     <ul>
       {data &&
-        users.map((user, index) => (
+        data.map((user: any, index: any) => (
           <li key={index}>
             <Typography variant="body1" fontSize={20}>
               {user.username}
