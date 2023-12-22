@@ -19,15 +19,17 @@ export const Rooms: React.FC = () => {
     socket.on('rooms:update', () => {
       fetchTrigger();
     });
+
     socket.on('room:join', (roomId) => {
       if (!currentUser) {
         return;
       }
-      console.log(currentUser);
       const userId = currentUser.id;
-      
       onJoinRoom(roomId, userId);
     });
+
+    console.log(window.history);
+    // window.history.replaceState({}, '', window.location.pathname);
     return () => {
       socket.removeAllListeners();
     };

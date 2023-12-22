@@ -3,6 +3,7 @@ export type User = {
   username: string;
   currentTime: number | null;
   currentRoomId: string | null;
+  readyPlay: boolean;
 };
 
 export interface UserState {

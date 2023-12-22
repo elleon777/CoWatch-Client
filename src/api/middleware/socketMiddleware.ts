@@ -19,6 +19,7 @@ export default function socketMiddleware(socket: any) {
               username: payload.username,
               currentTime: null,
               currentRoomId: null,
+              readyPlay: false,
             },
           };
           socket.emit('auth:login', updatedAction.payload);

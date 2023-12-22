@@ -2,67 +2,71 @@ import React from 'react';
 import { Container, Grid } from '@mui/material';
 import VideoJS from 'components/VideoJS';
 import { Users } from 'components/Users';
-import { useAppDispatch, useAppSelector } from 'utils/hooks/store';
-import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from 'utils/hooks/store';
 import { socket } from 'store';
 import { RequestVideo } from 'components/RequestVideo';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { RootState } from 'utils/@types/store';
-// import videojsQualitySelector from '@silvermine/videojs-quality-selector';
+import { createVideoPlayController } from 'utils/helpers/videoPlayController';
+
+import 'videojs-contrib-quality-levels';
+import 'videojs-http-source-selector';
 
 export const Room: React.FC = () => {
-  const navigate = useNavigate();
   const { roomId } = useParams();
   const { currentUser } = useAppSelector((state: RootState) => state.userState);
-  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const [srcVideo, setSrcVideo] = React.useState<string>('');
+  const [videoPlayController, setVideoPlayController] = React.useState<{
+    play: () => void;
+    reInit: () => void;
+  } | null>(null);
 
   const playerRef = React.useRef<any>(null);
-  const playVideo = async (): Promise<void> => {
-    try {
-      if (playerRef.current.paused) {
-        await playerRef.current.play();
-      }
-    } catch (err) {
-      console.error(err);
-      serverSyncPause();
-    }
-  };
 
   React.useEffect(() => {
-    return () => {
-      socket.emit('room:leave', { roomId, currentUser });
-    };
-  }, []);
-
-  React.useEffect(() => {
-    // player events
-    //TODO loop bug is live https://github.com/elan-ev/opencast-studio/issues/581
-    // canplay, loadeddata
-    // Uncaught (in promise) DOMException: The fetching process for the media resource was aborted by the user agent at the user's request.
-
-    socket.on('sync', (currentTime) => {
+    socket.on('player:syncTime', (currentTime) => {
       syncTime(currentTime);
     });
-    socket.on('syncPlay', () => {
-      playVideo();
-      // playerRef.current.play();
+    socket.on('player:syncPlay', () => {
+      console.log('player:syncPlay');
+      playerRef.current.one('canplay', () => {
+        playerRef.current.play();
+      });
     });
-    socket.on('syncPause', () => {
+    socket.on('player:syncPause', () => {
+      console.log('player:syncPause');
       playerRef.current.pause();
     });
-    socket.on('syncRequestVideo', (src) => {
+    socket.on('player:syncRequestVideo', (src) => {
       // setSrcVideo(src);
       playerRef.current.src({ type: 'video/mp4', src: src + '#t=0.5' });
     });
+    console.log(currentUser);
     return () => {
+      const userId = currentUser?.id;
+      socket.emit('room:leave', { roomId, userId });
       socket.removeAllListeners();
     };
   }, []);
-  const [srcVideo, setSrcVideo] = React.useState<string>('');
-  // const [srcVideo, setSrcVideo] = React.useState<string>(
-  //   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  // );
-  // https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
+
+  React.useEffect(() => {
+    const controller = createVideoPlayController(playerRef.current);
+    setVideoPlayController(controller);
+  }, [playerRef.current]);
+
+  function createSendTimeUsers() {
+    let oldCurrentTime = 0;
+    return () => {
+      const currentTime = Math.ceil(playerRef.current.currentTime());
+      if (currentTime !== oldCurrentTime) {
+        socket.emit('player:userTime', { roomId, currentUser, currentTime });
+        oldCurrentTime = currentTime;
+      }
+    };
+  }
+  const sendTimeUsers = createSendTimeUsers();
 
   const videoJsOptions = {
     autoplay: false,
@@ -90,21 +94,26 @@ export const Room: React.FC = () => {
   };
 
   const handlePlayerReady = (player: any) => {
+    player.httpSourceSelector();
     playerRef.current = player;
     const progressControl = player.controlBar.progressControl;
 
-    progressControl.on('mouseup', () => {
-      serverSync();
+    progressControl.on('mouseup', () => {});
+    player.on('canplay', () => {
+      console.log('client canplay');
     });
     player.on('play', () => {
+      serverSync();
       serverSyncPlay();
+      videoPlayController?.play();
     });
     player.on('pause', () => {
       serverSyncPause();
+      videoPlayController?.reInit();
     });
-    // player.on('timeupdate', () => {
-    //   console.log(Math.ceil(playerRef.current.currentTime()))
-    // });
+    player.on('timeupdate', () => {
+      sendTimeUsers();
+    });
   };
 
   function syncTime(currentTime: number): void {
@@ -112,30 +121,27 @@ export const Room: React.FC = () => {
       return;
     }
     playerRef.current.currentTime(currentTime);
-    playerRef.current.pause();
   }
   function serverSync(): void {
     const obj = {
       currentTime: playerRef.current.currentTime(),
       roomId,
     };
-    socket.emit('sendTime', obj);
+    socket.emit('player:syncTime', obj);
   }
   function serverSyncPlay(): void {
-    socket.emit('playVideo', roomId);
+    socket.emit('player:play', roomId);
   }
   function serverSyncPause(): void {
-    socket.emit('pauseVideo', roomId);
+    socket.emit('player:pause', roomId);
   }
-  function serverSendTime(): void {
-    socket.emit('sendTime');
-  }
+
   function requestVideo(src: string): void {
     const obj = {
       src,
       roomId,
     };
-    socket.emit('requestVideo', obj);
+    socket.emit('player:requestVideo', obj);
   }
 
   return (
@@ -145,10 +151,13 @@ export const Room: React.FC = () => {
           <RequestVideo requestVideo={requestVideo} />
         </Grid>
         <Grid item lg={8} xs={12}>
-          <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
+          <div>
+            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
+          </div>
         </Grid>
         <Grid item lg={4} xs={12}>
           <button onClick={serverSync}>SYNC</button>
+          <button onClick={sendTimeUsers}>SendTime</button>
           <Users roomId={roomId} />
         </Grid>
       </Grid>
