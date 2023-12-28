@@ -11,13 +11,13 @@ interface IUsersProps {
 }
 
 export const Users: React.FC<IUsersProps> = ({ roomId }) => {
-  const [fetchTrigger, { data = [] }] = useLazyGetRoomUsersQuery();
+  const [getRoomUsers, { data = [] }] = useLazyGetRoomUsersQuery();
   const [usersMap, actionsUsersMap] = useMap()
 
   React.useEffect(() => {
-    fetchTrigger(roomId);
+    getRoomUsers(roomId!);
     socket.on('room:updateUsers', () => {
-      fetchTrigger(roomId);
+      getRoomUsers(roomId!);
     });
     socket.on('player:userTime', ({ currentUser, currentTime }) => {
       const formatTime = videoTimeFormat(Math.ceil(currentTime));

@@ -1,23 +1,25 @@
 import React from 'react';
 import { Container, Grid } from '@mui/material';
 import VideoJS from 'components/VideoJS';
+import videojs from 'video.js';
 import { Users } from 'components/Users';
 import { useAppSelector } from 'utils/hooks/store';
 import { socket } from 'store';
 import { RequestVideo } from 'components/RequestVideo';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { RootState } from 'utils/@types/store';
 import { createVideoPlayController } from 'utils/helpers/videoPlayController';
-
-import 'videojs-contrib-quality-levels';
-import 'videojs-http-source-selector';
+import { QualityButton } from 'utils/videojs/QualityButton';
+import { useLazyGetSourcesFromRoomQuery } from 'api';
 
 export const Room: React.FC = () => {
   const { roomId } = useParams();
   const { currentUser } = useAppSelector((state: RootState) => state.userState);
-  const navigate = useNavigate();
-
-  const [srcVideo, setSrcVideo] = React.useState<string>('');
+  const [getSourcesFromRoom] = useLazyGetSourcesFromRoomQuery();
+  const [showPlayer, setShowPlayer] = React.useState(false);
+  const [readyPlayer, setReadyPlayer] = React.useState(false);
+  const [playerSources, setPlayerSources] = React.useState([]);
+  const [playerSubtitles, setPlayerSubtitles] = React.useState([]);
   const [videoPlayController, setVideoPlayController] = React.useState<{
     play: () => void;
     reInit: () => void;
@@ -25,25 +27,40 @@ export const Room: React.FC = () => {
 
   const playerRef = React.useRef<any>(null);
 
+  const getSourceVideo = async () => {
+    const payload = await getSourcesFromRoom(roomId!).unwrap();
+    if (!payload) {
+      return;
+    }
+    if (payload.sources) {
+      setPlayerSources(payload.sources);
+      setShowPlayer(true);
+    }
+    if (payload.subtitles) {
+      const subObj = new Blob([payload.subtitleVVT], { type: 'text/vtt' });
+      const url = (URL || webkitURL).createObjectURL(subObj);
+      const updatedSubtitles = { ...payload.subtitles, src: url, mode: 'showing' };
+      setPlayerSubtitles(updatedSubtitles);
+    }
+  };
+
   React.useEffect(() => {
+    getSourceVideo();
+    socket.on('player:updateSources', () => {
+      getSourceVideo();
+    });
     socket.on('player:syncTime', (currentTime) => {
       syncTime(currentTime);
     });
     socket.on('player:syncPlay', () => {
-      console.log('player:syncPlay');
       playerRef.current.one('canplay', () => {
         playerRef.current.play();
       });
     });
     socket.on('player:syncPause', () => {
-      console.log('player:syncPause');
       playerRef.current.pause();
     });
-    socket.on('player:syncRequestVideo', (src) => {
-      // setSrcVideo(src);
-      playerRef.current.src({ type: 'video/mp4', src: src + '#t=0.5' });
-    });
-    console.log(currentUser);
+
     return () => {
       const userId = currentUser?.id;
       socket.emit('room:leave', { roomId, userId });
@@ -52,9 +69,12 @@ export const Room: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
-    const controller = createVideoPlayController(playerRef.current);
-    setVideoPlayController(controller);
-  }, [playerRef.current]);
+    if (readyPlayer) {
+      console.log(playerRef.current);
+      const controller = createVideoPlayController(playerRef.current);
+      setVideoPlayController(controller);
+    }
+  }, [readyPlayer]);
 
   function createSendTimeUsers() {
     let oldCurrentTime = 0;
@@ -69,38 +89,33 @@ export const Room: React.FC = () => {
   const sendTimeUsers = createSendTimeUsers();
 
   const videoJsOptions = {
+    language: 'ru',
+    experimentalSvgIcons: true,
     autoplay: false,
     controls: true,
     responsive: true,
     fluid: true,
     preload: 'metadata',
-    sources: [
-      {
-        type: 'video/mp4',
-        src: 'https://video1.anilib.me//uploads/converted_videos/11047/11047_1080.mp4',
-        size: '1080',
-      },
-      {
-        type: 'video/mp4',
-        src: 'https://video1.anilib.me//uploads/converted_videos/11047/11047_720.mp4',
-        size: '720',
-      },
-      {
-        type: 'video/mp4',
-        src: 'https://video1.anilib.me//uploads/converted_videos/11047/11047_360.mp4',
-        size: '360',
-      },
-    ],
+    sources: playerSources,
+    tracks: [playerSubtitles],
   };
 
+  // обновление качества когда sources прогружены
   const handlePlayerReady = (player: any) => {
-    player.httpSourceSelector();
     playerRef.current = player;
-    const progressControl = player.controlBar.progressControl;
 
-    progressControl.on('mouseup', () => {});
-    player.on('canplay', () => {
-      console.log('client canplay');
+    // @ts-expect-error: ts not supported
+    videojs.registerComponent('QualityButton', QualityButton);
+
+    const qualityButton = player.controlBar.addChild('QualityButton', {
+      myItems: playerSources,
+    });
+    if (qualityButton) {
+      qualityButton.setIcon('cog');
+    }
+
+    player.on('ready', () => { // раньше был canplay
+      setReadyPlayer(true);
     });
     player.on('play', () => {
       serverSync();
@@ -136,28 +151,20 @@ export const Room: React.FC = () => {
     socket.emit('player:pause', roomId);
   }
 
-  function requestVideo(src: string): void {
-    const obj = {
-      src,
-      roomId,
-    };
-    socket.emit('player:requestVideo', obj);
-  }
-
   return (
     <Container maxWidth="xl" sx={{ pt: 5 }}>
       <Grid container spacing={2}>
         <Grid item lg={12} xs={12}>
-          <RequestVideo requestVideo={requestVideo} />
+          <RequestVideo roomId={roomId!} />
         </Grid>
         <Grid item lg={8} xs={12}>
-          <div>
+          {showPlayer ? (
             <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
-          </div>
+          ) : (
+            <div>Пусто</div> // TODO добавить прогресс крутилку когда видоса нет
+          )}
         </Grid>
         <Grid item lg={4} xs={12}>
-          <button onClick={serverSync}>SYNC</button>
-          <button onClick={sendTimeUsers}>SendTime</button>
           <Users roomId={roomId} />
         </Grid>
       </Grid>

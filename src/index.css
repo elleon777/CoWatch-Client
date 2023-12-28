@@ -11,5 +11,15 @@ code {
 }
 
 .video-js .vjs-time-control {
-  display: block;
+  display: block !important;
+}
+
+.video-js .vjs-icon-quality {
+
+}
+.video-js .vjs-icon-quality svg {
+  width:
+}
+.video-js .vjs-icon-quality svg path {
+  fill: #fff;
 }

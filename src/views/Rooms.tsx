@@ -11,13 +11,13 @@ export const Rooms: React.FC = () => {
   const navigate = useNavigate();
 
   const { currentUser } = useAppSelector((state: RootState) => state.userState);
-  console.log(currentUser);
-  const [fetchTrigger, { data = [] }] = useLazyGetRoomsQuery();
+  
+  const [getRooms, { data: users = [] }] = useLazyGetRoomsQuery();
 
   React.useEffect(() => {
-    fetchTrigger();
+    getRooms();
     socket.on('rooms:update', () => {
-      fetchTrigger();
+      getRooms();
     });
 
     socket.on('room:join', (roomId) => {
@@ -56,8 +56,8 @@ export const Rooms: React.FC = () => {
       </Button>
 
       <Grid container spacing={2} sx={{ pt: 5 }}>
-        {data ? (
-          data.map(({ id }: any) => (
+        {users ? (
+          users.map(({ id }: any) => (
             <Grid item key={id} xs={3}>
               <Button onClick={() => onJoinRoom(id, currentUser!.id)} variant="outlined">
                 Room: {id}

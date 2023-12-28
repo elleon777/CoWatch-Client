@@ -10,16 +10,26 @@ export const api = createApi({
       query: () => '/rooms',
     }),
     getRoomUsers: builder.query<any, string>({
-      query: (id: string) => `/rooms/${id}`,
+      query: (roomId: string) => `/rooms/${roomId}/users`,
     }),
-    getSourcesFromURL: builder.mutation({
-      query: (url: string) => ({
-        url: `/parser`,
-        method: 'POST',
-        body: url,
-      }),
+    getSourcesFromRoom: builder.query({
+      query: (roomId: string) => `/rooms/${roomId}/sources`,
+    }),
+    getSourcesFromURL: builder.query({
+      query: (args: { roomId: string; url: string }) => {
+        const { roomId, url } = args;
+        return {
+          url: `/parser`,
+          params: { roomId, url },
+        };
+      },
     }),
   }),
 });
 
-export const { useLazyGetRoomsQuery, useLazyGetRoomUsersQuery, useGetSourcesFromURLMutation } = api;
+export const {
+  useLazyGetRoomsQuery,
+  useLazyGetRoomUsersQuery,
+  useLazyGetSourcesFromRoomQuery,
+  useLazyGetSourcesFromURLQuery,
+} = api;

@@ -23,7 +23,7 @@ interface VideoPlayerProps {
 export const VideoJS: FC<VideoPlayerProps> = (props) => {
   const videoRef = React.useRef<HTMLDivElement | null>(null);
   const playerRef = React.useRef<Player | null>(null);
-  
+
   const { options, onReady } = props;
   React.useEffect(() => {
     if (!playerRef.current && videoRef.current) {
