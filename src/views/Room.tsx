@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid } from '@mui/material';
+import { Container, Grid, Skeleton } from '@mui/material';
 import VideoJS from 'components/VideoJS';
 import videojs from 'video.js';
 import { Users } from 'components/Users';
@@ -24,7 +24,6 @@ export const Room: React.FC = () => {
     play: () => void;
     reInit: () => void;
   } | null>(null);
-
   const playerRef = React.useRef<any>(null);
 
   const getSourceVideo = async () => {
@@ -100,7 +99,6 @@ export const Room: React.FC = () => {
     tracks: [playerSubtitles],
   };
 
-  // обновление качества когда sources прогружены
   const handlePlayerReady = (player: any) => {
     playerRef.current = player;
 
@@ -114,7 +112,8 @@ export const Room: React.FC = () => {
       qualityButton.setIcon('cog');
     }
 
-    player.on('ready', () => { // раньше был canplay
+    player.on('ready', () => {
+      // раньше был canplay
       setReadyPlayer(true);
     });
     player.on('play', () => {
@@ -161,7 +160,7 @@ export const Room: React.FC = () => {
           {showPlayer ? (
             <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
           ) : (
-            <div>Пусто</div> // TODO добавить прогресс крутилку когда видоса нет
+            <Skeleton variant="rectangular" className="skeleton__player" />
           )}
         </Grid>
         <Grid item lg={4} xs={12}>

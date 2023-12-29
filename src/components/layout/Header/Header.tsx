@@ -1,36 +1,17 @@
-import { Paper, Container, InputBase, Divider, IconButton } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import SyncIcon from '@mui/icons-material/Sync';
+import { Paper, Container, IconButton, useTheme } from '@mui/material';
+import { ColorModeContext } from 'App';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import React from 'react';
 
-interface HeaderProps {
-  ServerSync: any,
-  player: any,
-}
-
-function Header({ ServerSync, player }: HeaderProps) {
+function Header() {
+  const theme = useTheme();
+  const colorMode = React.useContext(ColorModeContext);
   return (
     <Container maxWidth="xl" sx={{ p: '20px 0' }}>
       <Paper component="form" sx={{ p: '2px 4px', display: 'flex', alignItems: 'center' }}>
-        <InputBase
-          sx={{ ml: 1, flex: 1 }}
-          placeholder="Create SyncVideo"
-          inputProps={{ 'aria-label': 'search google maps' }}
-        />
-        <IconButton
-          onClick={() => ServerSync.requestVideo()}
-          type="button"
-          sx={{ p: '10px' }}
-          aria-label="create syncvideo">
-          <SendIcon />
-        </IconButton>
-        <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-        <IconButton
-          onClick={ServerSync.setTime(player)}
-          type="button"
-          sx={{ p: '10px' }}
-          aria-label="sync video">
-          <SyncIcon />
+        <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
+          {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
         </IconButton>
       </Paper>
     </Container>

@@ -4,6 +4,7 @@ import { TextField, Button } from '@mui/material';
 import styles from './LoginForm.module.scss';
 import { User } from 'utils/@types/user';
 import { login } from 'store/user/user.slice';
+import { useLocalStorage } from 'usehooks-ts';
 
 export interface FormFields {
   username: string;
@@ -11,7 +12,10 @@ export interface FormFields {
 
 export const LoginForm: React.FC = () => {
   const dispatch = useDispatch();
+
   const [user, setUser] = React.useState<FormFields>({ username: 'anton' });
+  const [savedUser, setSavedUser] = useLocalStorage('user', user);
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setUser({
@@ -22,7 +26,7 @@ export const LoginForm: React.FC = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     dispatch(login(user));
-    //   // localStorage.setItem('user', JSON.stringify(user));
+    setSavedUser(user);
   };
 
   return (

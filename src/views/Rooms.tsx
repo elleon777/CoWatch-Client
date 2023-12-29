@@ -5,14 +5,16 @@ import { socket } from 'store';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from 'utils/hooks/store';
 import { RootState } from 'utils/@types/store';
-import { User } from 'utils/@types/user';
+
 
 export const Rooms: React.FC = () => {
+
+
   const navigate = useNavigate();
 
   const { currentUser } = useAppSelector((state: RootState) => state.userState);
-  
-  const [getRooms, { data: users = [] }] = useLazyGetRoomsQuery();
+
+  const [getRooms, { data: rooms = [] }] = useLazyGetRoomsQuery();
 
   React.useEffect(() => {
     getRooms();
@@ -28,8 +30,6 @@ export const Rooms: React.FC = () => {
       onJoinRoom(roomId, userId);
     });
 
-    console.log(window.history);
-    // window.history.replaceState({}, '', window.location.pathname);
     return () => {
       socket.removeAllListeners();
     };
@@ -40,7 +40,6 @@ export const Rooms: React.FC = () => {
     socket.emit('room:create', socketId);
   };
   const onJoinRoom = (roomId: number, userId: string) => {
-    console.log({ roomId, userId });
     socket.emit('room:join', { roomId, userId });
     navigate('/room/' + roomId);
   };
@@ -51,13 +50,15 @@ export const Rooms: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ pt: 5 }}>
+      
+
       <Button onClick={createRoom} variant="contained">
         Create Room
       </Button>
 
       <Grid container spacing={2} sx={{ pt: 5 }}>
-        {users ? (
-          users.map(({ id }: any) => (
+        {rooms ? (
+          rooms.map(({ id }: any) => (
             <Grid item key={id} xs={3}>
               <Button onClick={() => onJoinRoom(id, currentUser!.id)} variant="outlined">
                 Room: {id}

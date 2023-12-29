@@ -2464,7 +2464,7 @@ util-deprecate@^1.0.1:
     videojs-font "4.1.0"
     videojs-vtt.js "0.15.5"
 
-videojs-contrib-quality-levels@^4.0.0, videojs-contrib-quality-levels@4.0.0:
+videojs-contrib-quality-levels@4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/videojs-contrib-quality-levels/-/videojs-contrib-quality-levels-4.0.0.tgz"
   integrity sha512-u5rmd8BjLwANp7XwuQ0Q/me34bMe6zg9PQdHfTS7aXgiVRbNTb4djcmfG7aeSrkpZjg+XCLezFNenlJaCjBHKw==

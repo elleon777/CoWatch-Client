@@ -15,11 +15,16 @@ code {
 }
 
 .video-js .vjs-icon-quality {
-
 }
 .video-js .vjs-icon-quality svg {
-  width:
+  width: ;
 }
 .video-js .vjs-icon-quality svg path {
   fill: #fff;
+}
+
+.skeleton__player {
+  aspect-ratio: 986 / 555;
+  width: 100%;
+  height: 100% !important;
 }
