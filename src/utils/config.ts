@@ -1,1 +1,1 @@
-export const WEB_SOCKET_HOST = 'http://localhost:9999';
+export const WEB_SOCKET_HOST = process.env.REACT_APP_API_URL || 'http://localhost:9999';
