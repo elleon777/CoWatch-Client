@@ -1,4 +1,4 @@
-import { IconButton, TextField } from '@mui/material';
+import { CircularProgress, IconButton, TextField } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import React from 'react';
 import styles from './RequestVideo.module.scss';
@@ -13,15 +13,18 @@ export const RequestVideo: React.FC<VideoPlayerProps> = ({ roomId }) => {
   const [request, setRequest] = React.useState<string>(
     'https://anilib.me/anime/17984-chainsaw-man-anime/episode/106051?player=Animelib&team=32713',
   );
-  const [getSourcesFromURL] = useLazyGetSourcesFromURLQuery();
+  const [getSourcesFromURL, { isLoading }] = useLazyGetSourcesFromURLQuery();
+  const [disabled, setDisabled] = React.useState(false);
 
   const onChangeInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRequest(event.target.value);
   };
 
   const handleSubmit = async (event: any) => {
+    setDisabled(true);
     await getSourcesFromURL({ roomId, url: request }).unwrap();
     socket.emit('player:updateSources', roomId);
+    setDisabled(false);
     event.preventDefault();
   };
 
@@ -37,8 +40,8 @@ export const RequestVideo: React.FC<VideoPlayerProps> = ({ roomId }) => {
         variant="outlined"
         name="requestSrc"
       />
-      <IconButton className={styles.button} onClick={handleSubmit}>
-        <SendIcon />
+      <IconButton className={styles.button} onClick={handleSubmit} disabled={disabled}>
+        {isLoading ? <CircularProgress /> : <SendIcon />}
       </IconButton>
     </form>
   );
