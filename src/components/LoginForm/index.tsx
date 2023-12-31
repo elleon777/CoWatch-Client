@@ -13,8 +13,9 @@ export interface FormFields {
 export const LoginForm: React.FC = () => {
   const dispatch = useDispatch();
 
-  const [user, setUser] = React.useState<FormFields>({ username: 'anton' });
+  const [user, setUser] = React.useState<FormFields>({ username: '' });
   const [savedUser, setSavedUser] = useLocalStorage('user', user);
+  const [disabled, setDisabled] = React.useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -26,6 +27,7 @@ export const LoginForm: React.FC = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     dispatch(login(user));
+    setDisabled(true);
     setSavedUser(user);
   };
 
@@ -41,7 +43,7 @@ export const LoginForm: React.FC = () => {
         variant="outlined"
         required
       />
-      <Button variant="contained" type="submit">
+      <Button variant="contained" type="submit" disabled={disabled}>
         Войти
       </Button>
     </form>
