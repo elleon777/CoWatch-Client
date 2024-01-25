@@ -1,27 +1,42 @@
-# React + TypeScript + Vite
+## CoWatch
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### Описание
 
-Currently, two official plugins are available:
+Это приложение предназначено для синхронизированного просмотра видео по прямым ссылкам. Возможности включают в себя:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Создание комнат.
+- Индивидуальное управление временем видео для каждого пользователя.
+- Поддержка субтитров и выбор качества видео.
+- Синхронизация паузы, воспроизведения и прокрутки видео для каждого участника комнаты.
+- Парсинг прямых ссылок на видео mp4, а так же файлов субтитров vvt с обходом правил cors.
 
-## Expanding the ESLint configuration
+Парсер протестирован на примере anilib.me.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Технологии
 
-- Configure the top-level `parserOptions` property like this:
+#### Frontend:
+- **React**: JavaScript библиотека для построения пользовательских интерфейсов.
+- **Redux Toolkit / RTK Query**: Инструменты для управления состоянием приложения и выполнения запросов.
+- **React Router**: Библиотека для навигации внутри React-приложений.
+- **VideoJs**: Веб-плеер для воспроизведения видео.
+- **Axios**: Библиотека для выполнения HTTP-запросов.
+- **SocketIO-Client**: Клиент для работы с WebSocket, обеспечивающий взаимодействие в режиме реального времени.
+- **UseHooks-ts**: Набор кастомных хуков для удобной работы с функциональными компонентами.
+- **MaterialUI**: Библиотека компонентов для построения стильных пользовательских интерфейсов.
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
-```
+#### Backend:
+- **Express**: Фреймворк для создания веб-приложений на Node.js.
+- **SocketIO**: Библиотека для работы с WebSocket на сервере, обеспечивающая двустороннюю связь между клиентом и сервером.
+- **Puppeteer**: Библиотека для автоматизации работы с браузером, используется для парсинга прямых ссылок на видео mp4.
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Инструкции по запуску
+
+1. Клонируйте репозиторий: `git clone [ссылка_на_репозиторий]`
+2. Перейдите в папку проекта: `cd [название_папки]`
+3. Установите зависимости для frontend: `npm install`
+4. Перейдите в папку backend: `cd backend`
+5. Установите зависимости для backend: `npm install`
+6. Запустите frontend: `npm run dev`
+7. Запустите backend: `npm run dev`
+
+Теперь вы можете открыть приложение в браузере и начать использование.
